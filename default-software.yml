@@ -1,7 +1,7 @@
 ---
 - hosts: vagrant-centos
   become: true
-# Install useful sysadmin software to the newly installed CentOS 7
+# Install useful sysadmin software to the newly deployed minimal CentOS 7
 # Pereq: $ ansible-galaxy install geerlingguy.repo-epel
   roles:
     - geerlingguy.repo-epel

@@ -1,0 +1,66 @@
+---
+- name: Install Netdata software
+  hosts: vagrant-centos
+# This playbook was tested on Linux Centos 7.6
+  
+  tasks:
+    - name: "EPEL repo"
+      become: true
+      package:
+        name: epel-release
+        state: present
+      when:
+        - ansible_os_family == "RedHat"
+        - ansible_distribution != "Fedora"
+
+    - name: Download netdata Install script
+      get_url:
+        url: https://my-netdata.io/kickstart-static64.sh
+        dest: /tmp/kickstart-static64.sh
+        mode: '0750'
+
+    - name: Execute Netdata install script
+      shell: echo y | /tmp/kickstart-static64.sh > /tmp/ansible-netdata-install.log
+      args:
+        executable: /bin/bash
+
+    - name: Enable netdata service and ensure it is started
+      systemd:
+        name: netdata
+        state: started
+        enabled: true
+
+    - name: Copy alarm config if not already exists
+      become: true
+      copy: 
+        src: /opt/netdata/usr/lib/netdata/conf.d/health_alarm_notify.conf
+        dest: /opt/netdata/etc/netdata/
+        owner: netdata
+        group: netdata
+        remote_src: yes
+        force: no
+
+    - name: Configure slack and pushbullet notifications
+      become: true
+      lineinfile:
+        path: /opt/netdata/etc/netdata/health_alarm_notify.conf
+        regexp: '{{item.From}}'
+        line: '{{item.To}}'
+        state: present
+      with_items:
+        - { From: '^SEND_SLACK', To: 'SEND_SLACK="YES"'}
+        - { From: '^SLACK_WEBHOOK_URL', To: 'SLACK_WEBHOOK_URL="https://hooks.slack.com/services/webhook/urlhere"'}
+        - { From: '^DEFAULT_RECIPIENT_SLACK', To: 'DEFAULT_RECIPIENT_SLACK="@USERIDHERE'}
+        - { From: '^PUSHBULLET_ACCESS_TOKEN', To: 'PUSHBULLET_ACCESS_TOKEN="o.pushbullettokenhere"'}
+        - { From: '^DEFAULT_RECIPIENT_PUSHBULLET', To: 'DEFAULT_RECIPIENT_PUSHBULLET="youremail@post.cz"'}
+
+    - name: send test notifications to sysadmin
+      become: true
+      become_user: netdata
+      environment: 
+        NETDATA_ALARM_NOTIFY_DEBUG: 1
+      shell: /opt/netdata/netdata-plugins/plugins.d/alarm-notify.sh test
+      args:
+        executable: /bin/bash
+# bash <(curl -Ss https://my-netdata.io/kickstart-static64.sh)
+#Please type y to accept, n otherwise: y

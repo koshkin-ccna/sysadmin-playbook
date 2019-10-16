@@ -1,0 +1,48 @@
+---
+- hosts: vagrant-centos
+  become: true
+# Install useful sysadmin software to the newly installed CentOS 7
+# Pereq: $ ansible-galaxy install geerlingguy.repo-epel
+  roles:
+    - geerlingguy.repo-epel
+  
+  tasks:
+    - name: Set timezone
+      timezone:
+        name: Europe/Prague
+    
+    - name: upgrade all packages
+      yum:
+        name: '*'
+        state: latest
+    
+    - name: install the 'Development tools' package group
+      yum:
+        name: "@Development tools"
+        state: present
+    
+    - name: useful sysadmin packages install
+      yum:
+        name: "{{ packages }}"
+      vars:
+        packages:
+        - yum-utils
+        - git
+        - bash-completion
+        - vim-enhanced
+        - screen
+        - tmux
+        - tcpdump
+        - ngrep
+        - mc
+        - iotop
+        - iftop
+        - htop
+        - nmap
+        - wget
+        - curl
+        - telnet
+        - p7zip
+        - net-tools
+        - bind-utils
+        - rkhunter

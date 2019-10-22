@@ -9,7 +9,7 @@
     certbot_create_standalone_stop_services:
      - nginx
     certbot_certs:
-        - email: "admin@examle.cz"
+        - email: "admin@example.cz"
           domains:
             - cloud-grafana.example.cz
             - www.cloud-grafana.example.cz

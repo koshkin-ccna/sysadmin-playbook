@@ -1,0 +1,28 @@
+---
+- hosts: vagrant-centos
+  become: true
+
+  vars:
+   alertmanager_version: 0.18.0
+   alertmanager_web_listen_address: '0.0.0.0:9093'
+   alertmanager_web_external_url: 'http://cloud-grafana.example.cz:9093/'
+   alertmanager_route:
+    receiver: "hook-receiver"
+   alertmanager_receivers:
+   - name: 'hook-receiver'
+     slack_configs:
+     - api_url: https://hooks.slack.com/services/changeme/token-there
+       channel: '#slackchannel-here'
+   - name: 'hook-receiver-high'
+     slack_configs:
+     - api_url: https://hooks.slack.com/services/another/token-here
+       channel: '@admin-mention'
+
+  roles:
+    - cloudalchemy.alertmanager
+
+
+#$ ansible-galaxy install cloudalchemy.alertmanager
+#- downloading role 'alertmanager', owned by cloudalchemy
+#- downloading role from https://github.com/cloudalchemy/ansible-alertmanager/archive/0.14.0.tar.gz
+#- cloudalchemy.alertmanager (0.14.0) was installed successfully

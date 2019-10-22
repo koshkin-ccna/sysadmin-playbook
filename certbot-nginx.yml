@@ -1,0 +1,32 @@
+---
+- hosts: vagrant-centos
+  become: true
+
+  vars:
+    certbot_create_if_missing: yes
+    certbot_admin_email: admin@example.cz
+    certbot_create_method: standalone
+    certbot_create_standalone_stop_services:
+     - nginx
+    certbot_certs:
+        - email: "admin@examle.cz"
+          domains:
+            - cloud-grafana.example.cz
+            - www.cloud-grafana.example.cz
+    certbot_install_from_source: true
+    certbot_repo: https://github.com/certbot/certbot.git
+    certbot_version: master
+    certbot_keep_updated: true
+    certbot_dir: /opt/certbot
+    certbot_auto_renew_options: "--pre-hook 'service nginx stop' --post-hook 'service nginx start'"
+  roles:
+    - geerlingguy.certbot
+
+#Zeros-MacBook-Pro:~ zerocool$ ansible-galaxy install geerlingguy.certbot
+#- downloading role 'certbot', owned by geerlingguy
+#- downloading role from https://github.com/geerlingguy/ansible-role-certbot/archive/3.0.3.tar.gz
+#- extracting geerlingguy.certbot to ~/.ansible/roles/geerlingguy.certbot
+#- geerlingguy.certbot (3.0.3) was installed successfully
+
+#/opt/certbot/certbot-auto renew --quiet --no-self-upgrade
+#https://github.com/geerlingguy/ansible-role-certbot/issues/57

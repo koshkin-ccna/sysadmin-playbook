@@ -10,7 +10,7 @@
     - geerlingguy.pip
     - geerlingguy.docker
 
-# This playbook uses two externale ansible galaxy roles
+# This playbook uses two external ansible galaxy roles
 # Install geerlingguy.pip and geerlingguy.docker roles before executing this paybook
 #
 # Playbook was tested with following versions:

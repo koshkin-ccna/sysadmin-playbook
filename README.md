@@ -6,9 +6,9 @@
 
 + Install Ansible
 + Install Ansible Galaxy roles (see roles section in each playbook)
-+ Edit inv.yml file to correspond with your target hosts
-  + or remove `inv.yml` and `ansible.cfg` file to use your global ansible inventory file
-+ Edit `hosts:` line in each playbook to configure target host(s)
++ Edit `inv.yml` file to correspond with your target hosts
+  + or remove `inv.yml` and `ansible.cfg` files to use your global ansible inventory file
++ Edit `hosts` line in each playbook to configure target host(s)
 
 
 ## Description

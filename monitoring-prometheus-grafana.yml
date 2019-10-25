@@ -1,0 +1,86 @@
+---
+- hosts: vagrant-centos
+  become: true
+
+  pre_tasks:
+    - name: Add entries to hosts file
+      become: true
+      lineinfile:
+        path: /etc/hosts
+        regexp: '{{item.From}}'
+        line: '{{item.To}}'
+        state: present
+      with_items:
+        - { From: '^172\.22\.19\.5', To: '172.22.19.5 cloud-pg0'}
+        - { From: '^172\.22\.19\.8', To: '172.22.19.8 cloud-db1'}
+        - { From: '^172\.22\.19\.14', To: '172.22.19.14 cloud-docker'}
+        - { From: '^172\.22\.19\.7', To: '172.22.19.7 cloud-webiis'}
+        - { From: '^172\.22\.19\.9', To: '172.22.19.9 cloud-app'}
+        - { From: '^172\.22\.19\.17', To: '172.22.19.17 cloud-gis'}
+
+  vars:
+###GRAFANA config section###
+    grafana_version: "6.3.3"
+    grafana_security:
+      admin_user: grafanaadmin
+      admin_password: change_to_secure_password
+    grafana_datasources:
+      - name: prometheus
+        type: prometheus
+        access: proxy
+        url: 'http://localhost:9090'
+        basicAuth: false
+    grafana_dashboards:
+      # Node Exporter Full by idealista
+      - dashboard_id: 1860
+        revision_id: 14
+        datasource: prometheus
+      # Node Exporter Server Metrics by Knut Ytterhaug
+      - dashboard_id: 405
+        revision_id: 8
+        datasource: prometheus
+      # Prometheus system by Thomas Cheronneau
+      - dashboard_id: 159
+        revision_id: 5
+        datasource: prometheus
+
+###PROMETHEUS config section###
+    prometheus_version: "2.12.0"
+    prometheus_web_listen_address: "0.0.0.0:9090"    
+    prometheus_targets:
+      node:
+        - targets:
+          - localhost:9100
+          - cloud-pg0:9100
+          - cloud-db1:9100
+    prometheus_scrape_configs:
+    # Custom scrape job, here using `static_config`
+      - job_name: "prometheus"    
+        metrics_path: "/metrics"
+        static_configs:
+          - targets:
+            - "localhost:9090"
+      - job_name: "node-exporters"
+        file_sd_configs:
+          - files:
+            # This line loads file created from `prometheus_targets`
+            - "{{ prometheus_config_dir }}/file_sd/node.yml" 
+
+  roles:
+    - cloudalchemy.node-exporter
+    - cloudalchemy.prometheus
+    - cloudalchemy.grafana
+
+# Fix for Ansible on macOS machines
+# https://github.com/ansible/ansible/issues/31869
+# export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
+
+# ROLES
+# https://galaxy.ansible.com/cloudalchemy/node-exporter
+# cloudalchemy.node-exporter, 0.14.0
+
+# https://galaxy.ansible.com/cloudalchemy/prometheus
+# cloudalchemy.prometheus, 2.9.3)
+
+# https://galaxy.ansible.com/cloudalchemy/grafana
+# cloudalchemy.grafana, 0.14.2

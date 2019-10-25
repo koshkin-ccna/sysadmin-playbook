@@ -22,7 +22,7 @@
   roles:
     - geerlingguy.certbot
 
-#Zeros-MacBook-Pro:~ zerocool$ ansible-galaxy install geerlingguy.certbot
+# $ ansible-galaxy install geerlingguy.certbot
 #- downloading role 'certbot', owned by geerlingguy
 #- downloading role from https://github.com/geerlingguy/ansible-role-certbot/archive/3.0.3.tar.gz
 #- extracting geerlingguy.certbot to ~/.ansible/roles/geerlingguy.certbot

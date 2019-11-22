@@ -1,6 +1,6 @@
 # sysadmin-playbook
 
- Ansible playbooks for everyday sysadmin tasks 
+ Ansible playbooks for everyday sysadmin tasks
 
 ## Prereq
 
@@ -9,7 +9,6 @@
 + Edit `inv.yml` file to correspond with your target hosts
   + or remove `inv.yml` and `ansible.cfg` files to use your global ansible inventory file
 + Edit `hosts` line in each playbook to configure target host(s)
-
 
 ## Description
 
@@ -35,11 +34,43 @@ $ ansible-playbook certbot-nginx.yml
 
 ### monitoring-alertmanager.yml
 
+### monitoring-prometheus-grafana.yml
+
+```console
+ansible-galaxy install \
+    cloudalchemy.node-exporter \
+    cloudalchemy.prometheus \
+    cloudalchemy.grafana
+ansible-playbook user-create-centos.yml
+```
+This playbook installs Prometheus and Grafana to the CentOS server.
+
++ Add monitored hosts to /etc/hosts
++ Install Node Exporter to localhost
++ Install Prometheus version 2.12.0
++ Install Grafana version 6.3.3
++ Add dashboards to Grafana
+
+This playbook uses three roles from cloudalchemy, so you have to install them before running this playbook.
+
 ### monitoring-netdata.yml
+This playbook installs Netdata and configures notification for local machine. Easy to use basic real-time monitoring of the localhost. It has prometheus-like built-in exporter if you want to screpe data from netdata.
+
+> Netdata is an open source tool to visualize and monitor real-time metrics, optimized to accumulate all types of data, such as CPU usage, disk activity, SQL queries, visits to a website, etc
+
++ Install epel repository
++ Download netdata Install script
++ Execute Netdata install script
++ Enable netdata systemd service
++ Create alarm config from sample file
++ Configure Slack and Pushbullet notifications
++ Send test notifications to sysadmin
 
 ### user-create-centos.yml
 
-> $ ansible-playbook user-create-centos.yml
+```console
+ansible-playbook user-create-centos.yml
+```
 
 playbook tested on CentOS 7.6.1810 (Core)
 

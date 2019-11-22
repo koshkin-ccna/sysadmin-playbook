@@ -36,3 +36,14 @@ $ ansible-playbook certbot-nginx.yml
 ### monitoring-alertmanager.yml
 
 ### monitoring-netdata.yml
+
+### user-create-centos.yml
+
+> $ ansible-playbook user-create-centos.yml
+
+playbook tested on CentOS 7.6.1810 (Core)
+
++ Install zsh package
++ Create user without password
++ Put ssh public keys
++ Allow passwordless sudo

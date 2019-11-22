@@ -1,0 +1,48 @@
+---
+- hosts: vagrant-centos
+  become: true
+
+  vars:
+    base_svr_users:
+      - name: zerocool
+        sudo: true
+
+  tasks:
+    - name: install packages 
+      yum:
+        name: "{{ packages }}"
+      vars:
+        packages:
+        - zsh
+        - wget
+        - git
+        - curl
+   
+    - name: Make sure we have a 'wheel' group
+      group:
+        name=wheel
+        state=present
+
+    - name: Add the user 'zerocool' with a bash shell
+      user:
+        name: zerocool
+        shell: /bin/bash
+        groups: adm,wheel,systemd-journal
+        append: yes
+
+    - name: Set up multiple authorized keys
+      authorized_key:
+        user: zerocool
+        state: present
+        key: '{{ item }}'
+      with_file:
+        - ~/.ssh/id_rsa.pub
+        - ~/.ssh/id_rsa_mike.pub
+
+    - name: Allow specified users to passwordless sudo
+      template:
+        src: templates/sudoers.j2
+        dest: /etc/sudoers.d/92-zerocool-user
+        validate: '/sbin/visudo -cf %s'
+        mode: 0440
+

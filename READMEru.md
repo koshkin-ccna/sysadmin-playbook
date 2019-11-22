@@ -36,3 +36,14 @@ $ ansible-playbook certbot-nginx.yml
 ### monitoring-alertmanager.yml
 
 ### monitoring-netdata.yml
+
+### user-create-centos.yml
+
+> $ ansible-playbook user-create-centos.yml
+
+плейбук проверен на CentOS 7.6.1810 (Core)
+
++ Установить пакет zsh
++ Создать нового пользователя
++ Положить публичные ssh ключи для авторизации
++ Разрешить sudo без пароля

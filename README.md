@@ -43,6 +43,7 @@ ansible-galaxy install \
     cloudalchemy.grafana
 ansible-playbook user-create-centos.yml
 ```
+
 This playbook installs Prometheus and Grafana to the CentOS server.
 
 + Add monitored hosts to /etc/hosts
@@ -54,7 +55,8 @@ This playbook installs Prometheus and Grafana to the CentOS server.
 This playbook uses three roles from cloudalchemy, so you have to install them before running this playbook.
 
 ### monitoring-netdata.yml
-This playbook installs Netdata and configures notification for local machine. Easy to use basic real-time monitoring of the localhost. It has prometheus-like built-in exporter if you want to screpe data from netdata.
+
+This playbook installs Netdata and configures the notification for the local machine. Real-time monitoring from the web interface on port 19999 of the localhost. It has a prometheus-like builtin exporter if you want to scrape data from netdata.
 
 > Netdata is an open source tool to visualize and monitor real-time metrics, optimized to accumulate all types of data, such as CPU usage, disk activity, SQL queries, visits to a website, etc
 

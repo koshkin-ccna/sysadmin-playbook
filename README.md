@@ -32,6 +32,19 @@ $ ansible-playbook certbot-nginx.yml
 
 ### docker-install.yml
 
+### ius-repo-git2u-all.yml
+
+Install IUS repo and git2u-all package. This playbook installs most recent git version.
+
+IUS is a yum repository that provides newer versions of select software for RHEL and CentOS. <https://ius.io/>
+
+Manually remove old git packages if already installed:
+
+```console
+git --version
+sudo yum remove git*
+```
+
 ### monitoring-alertmanager.yml
 
 ### monitoring-prometheus-grafana.yml

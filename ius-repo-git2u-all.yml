@@ -1,0 +1,43 @@
+---
+- hosts: vagrant-centos
+  become: true
+
+# проверка наличия установленного репозитория IUS
+  tasks:
+    - name: Check if IUS repo is already configured
+      stat:
+        path: /etc/yum.repos.d/ius.repo
+      register: ius_repofile_result
+
+# переменная для определения операционной системы
+    - name: Configure IUS variables
+      set_fact:
+        ius_distribution_abbrev: "{{ (ansible_distribution == 'CentOS') | ternary('centos', 'rhel') }}"
+
+# установка репозиторя через rpm пакет
+    - name: Install IUS repo
+      yum:
+        name: |
+          https://{{ ius_distribution_abbrev }}{{ ansible_distribution_major_version }}.iuscommunity.org/ius-release.rpm
+        state: present
+      when: not ius_repofile_result.stat.exists
+
+# импорт ключа репозитория
+    - name: Import IUS GPG key
+      rpm_key:
+        key: /etc/pki/rpm-gpg/RPM-GPG-KEY-IUS-{{ ansible_distribution_major_version }}
+        state: present
+      when: not ius_repofile_result.stat.exists
+
+# установка более свежих версий, чем в стандартном репозитории CentOS 7
+    - name: Install git and tmux packages
+      yum:
+        name: "{{ packages }}"
+      vars:
+        packages:
+        - git2u-all # Version 2.16.5
+        - tmux2u # Version 2.8
+#       - haproxy20 # Version 2.0.9
+
+# https://github.com/davidalger/ansible-role-repo-ius/
+# https://galaxy.ansible.com/davidalger/repo_ius

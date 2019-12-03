@@ -1,0 +1,70 @@
+---
+- hosts: mcs-vpn0-public.novalocal
+  become: true
+
+  tasks:
+    - name: Enable IPv4 packet forwarding
+      sysctl:
+        name: net.ipv4.ip_forward
+        value: '1'
+        sysctl_set: yes
+        state: present
+        reload: yes
+  
+    - name: Add wireguard repository
+      yum_repository:
+        name: wireguard
+        description: wireguard repo
+        baseurl: https://copr-be.cloud.fedoraproject.org/results/jdoss/wireguard/epel-7-$basearch/
+        gpgkey: https://copr-be.cloud.fedoraproject.org/results/jdoss/wireguard/pubkey.gpg
+
+    - name: install wireguard packages 
+      yum:
+        name: "{{ packages }}"
+      vars:
+        packages:
+        - wireguard-dkms
+        - wireguard-tools
+        - qrencode
+
+    - name: waaait a minute and reboot machine
+      reboot:
+        pre_reboot_delay: 91
+
+    - name: install firewalld packages
+      yum:
+        name: firewalld
+
+    - firewalld:
+        zone: public
+        interface: eth0
+        permanent: yes
+        state: enabled
+
+    - name: Ensure ssh service is allowed
+      firewalld:
+        zone: public
+        service: ssh
+        permanent: yes
+#        immediate: yes
+        state: enabled
+    
+    - name: Permit wireguard udp port
+      firewalld:
+        port: 51820/udp
+        permanent: yes
+        state: enabled
+        zone: public
+
+    - name: Ensure firewall is active and enabled
+      service:
+        name: firewalld
+        state: started
+        enabled: yes
+
+    - name: Enable masquarade on public
+      firewalld:
+        masquerade: yes
+        state: enabled
+        permanent: yes
+        zone: public

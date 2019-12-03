@@ -1,0 +1,101 @@
+---
+- hosts: vagrant-centos
+  become: true
+
+  vars:
+# edit this var with yout public ip address (floating ip)
+# публичный IP адрес сервера в сети интернет
+    vpn_server_publicip: 'YOUR_SERVER_PUBLIC_IP'
+
+# number of client configs to generate
+# количество клиентских конфигов
+    vpn_clients: 8
+    vpn_interface: 'wg0'
+
+# three octets of private ip /24 subnet inside tunnels
+# три октета /24 подсети для внутренней адресации
+    vpn_network: '10.99.1'
+
+# keepalive in seconds, useful for clients bihind NAT
+# поддерживать соединения, чтобы не роутер не разрывал неактивные NAT
+    vpn_persistent_keepalive: 15
+
+# default wireguard server port
+# стандартный порт wireguard сервера
+    vpn_port: '51820'
+
+  tasks:
+
+    - name: check if config already exists
+      stat:
+        path: /etc/wireguard/wg0.conf
+      register: wg0_conf
+
+    - name: Dirs for wireguard configs
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+      loop:
+        - /etc/wireguard
+        - /root/wg
+      when: wg0_conf is not defined or wg0_conf.stat.exists == false
+
+    - name: generate directories for client configs
+      file:
+        path: "/root/wg/client_{{ item }}"
+        state: directory
+        owner: root
+        group: root
+        mode: 0700
+      with_sequence: start=1 end={{ vpn_clients }}
+      when: wg0_conf is not defined or wg0_conf.stat.exists == false
+
+    - name: generate private and public keys for the client and server
+      shell: umask 077; wg genkey | tee /root/wg/{{ item }}.private | wg pubkey > /root/wg/{{ item }}.public
+      register: key_files
+      with_sequence: start=0 end={{ vpn_clients }}
+      when: wg0_conf is not defined or wg0_conf.stat.exists == false
+
+    - name: register private key file contents
+      shell: cat /root/wg/{{ item }}.private
+      register: private_key_files
+      with_sequence: start=0 end={{ vpn_clients }}
+
+    - name: register public key file contents
+      shell: cat /root/wg/{{ item }}.public
+      register: public_key_files
+      with_sequence: start=0 end={{ vpn_clients }}
+
+    - name: generate client configs
+      template:
+        src: templates/wgclient.conf.j2
+        dest: "/root/wg/client_{{ item }}/wg0-client.conf"
+        owner: root
+        group: root
+        mode: 0600
+      with_sequence: start=1 end={{ vpn_clients }}
+      when: wg0_conf is not defined or wg0_conf.stat.exists == false
+
+    - name: generate qr codes for client configs
+      shell: umask 077; qrencode --type=PNG --output=/root/wg/client_{{ item }}/wg0-client.png < /root/wg/client_{{ item }}/wg0-client.conf
+      with_sequence: start=1 end={{ vpn_clients }}
+      when: wg0_conf is not defined or wg0_conf.stat.exists == false
+
+    - name: generate server config
+      template:
+        src: templates/wg0.conf.j2
+        dest: "/etc/wireguard/wg0.conf"
+        owner: root
+        group: root
+        mode: 0600
+
+    - name: Ensure wg0-server is active and enabled
+      service:
+        name: wg-quick@wg0
+        state: started
+        enabled: yes
+
+# Credits to https://github.com/frjo/ansible-roles/tree/master/wireguard

@@ -1,0 +1,8 @@
+---
+- hosts: vagrant-centos
+  become: true
+  
+  tasks:
+
+    - name: Reboot all machines 
+      reboot:

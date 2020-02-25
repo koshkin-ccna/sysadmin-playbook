@@ -1,0 +1,14 @@
+---
+- name: Install prometheus Node exporter
+  hosts: vagrant-centos
+  become: true
+  
+  vars:
+    node_exporter_version: 0.18.1
+    node_exporter_web_listen_address: "0.0.0.0:9100"
+  
+  roles:
+    - cloudalchemy.node-exporter
+
+#https://github.com/ansible/ansible/issues/31869
+# export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
